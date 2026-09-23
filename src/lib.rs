@@ -426,6 +426,14 @@ pub async fn index(negotiate: MarkdownNegotiate) -> Response {
     )
 }
 
+#[get("/showcase")]
+pub async fn showcase(negotiate: MarkdownNegotiate) -> Response {
+    negotiate.respond(
+        || site::render_showcase_page().into_response(),
+        || MarkdownPage::new(site::markdown::render_showcase_page()),
+    )
+}
+
 #[get("/docs")]
 pub async fn docs_index() -> Redirect {
     Redirect::temporary(DOCS_START_PATH)
@@ -612,6 +620,7 @@ pub async fn sitemap_xml() -> Response {
 pub fn app_routes() -> Vec<autumn_web::Route> {
     let mut routes = routes![
         index,
+        showcase,
         docs_index,
         docs_search,
         docs_page,

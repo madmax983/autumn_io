@@ -269,6 +269,142 @@ async fn main() {
         .await;
 }"#;
 
+/// Showcase-page prose, kept as constants rather than string literals inside
+/// `html!` so [`markdown`] can render the *same* sentences instead of a second
+/// copy that drifts on the next edit.
+const SHOWCASE_HEADLINE: &str = "Built with Autumn.";
+const SHOWCASE_LEDE: &str = "Real projects shipping on the framework — starting with this very documentation site. If you built something with Autumn, it belongs on this wall.";
+const SHOWCASE_EXAMPLES_LEDE: &str = "Starters and examples from the Autumn repository. Clone one, make it yours, ship it — then come back and claim your spot above.";
+const SHOWCASE_CTA_LEDE: &str = "Shipping something on Autumn? Open an issue with a link and a one-line description, and we'll add it to the wall.";
+const SHOWCASE_PATH: &str = "/showcase";
+const SHOWCASE_SUBMIT_URL: &str = "https://github.com/autumn-foundation/autumn_io/issues";
+
+/// One project on the showcase wall.
+pub struct ShowcaseEntry {
+    pub name: &'static str,
+    pub tagline: &'static str,
+    pub description: &'static str,
+    pub url: &'static str,
+    pub tags: &'static [&'static str],
+}
+
+/// Projects shipping in production on Autumn.
+pub const SHOWCASE_ENTRIES: &[ShowcaseEntry] = &[ShowcaseEntry {
+    name: "autumn-web.app",
+    tagline: "This documentation site",
+    description: "The site you're reading is itself an Autumn app — Maud templates, typed routes, content-negotiated Markdown, and its own MCP endpoint. Dogfooded daily.",
+    url: "https://autumn-web.app",
+    tags: &["docs", "dogfooding", "mcp"],
+}];
+
+/// Starters and runnable examples from the Autumn repository.
+pub const SHOWCASE_EXAMPLE_ENTRIES: &[ShowcaseEntry] = &[
+    ShowcaseEntry {
+        name: "todo-app",
+        tagline: "Full-stack reference app",
+        description: "The classic Autumn stack end to end: Diesel and diesel-async on Postgres, Maud views, embedded migrations.",
+        url: "https://github.com/autumn-foundation/autumn/tree/main/examples/todo-app",
+        tags: &["starter", "postgres", "diesel"],
+    },
+    ShowcaseEntry {
+        name: "blog",
+        tagline: "Blog engine",
+        description: "A blog engine on Autumn's full-stack path: Diesel, Maud, Tailwind, htmx, embedded migrations, and the hybrid-rendering pipeline.",
+        url: "https://github.com/autumn-foundation/autumn/tree/main/examples/blog",
+        tags: &["starter", "htmx", "tailwind"],
+    },
+    ShowcaseEntry {
+        name: "cms",
+        tagline: "WordPress-core-parity CMS",
+        description: "A complete, runnable CMS from Autumn's shipped primitives: posts and pages, media library, threaded comments with moderation, revisions, menus, themes, and roles.",
+        url: "https://github.com/autumn-foundation/autumn/tree/main/examples/cms",
+        tags: &["starter", "cms", "plugins"],
+    },
+    ShowcaseEntry {
+        name: "wiki",
+        tagline: "Wiki with revision history",
+        description: "A small wiki showing how mutation hooks, generated repositories, and Markdown documentation primitives fit together — lifecycle logic, revision history, and a JSON API without hand-written CRUD.",
+        url: "https://github.com/autumn-foundation/autumn/tree/main/examples/wiki",
+        tags: &["starter", "markdown", "api"],
+    },
+    ShowcaseEntry {
+        name: "reddit-clone",
+        tagline: "Reddit clone",
+        description: "A Reddit clone showcasing the framework's major features in a single cohesive application.",
+        url: "https://github.com/autumn-foundation/autumn/tree/main/examples/reddit-clone",
+        tags: &["starter", "community"],
+    },
+    ShowcaseEntry {
+        name: "saas",
+        tagline: "Multi-tenant SaaS starter",
+        description: "A complete, runnable multi-tenant SaaS app: session-based authentication, row-level multi-tenancy, and tenant-scoped repositories. Sign up an organisation, log in, land on a dashboard.",
+        url: "https://github.com/autumn-foundation/autumn/tree/main/examples/saas",
+        tags: &["starter", "saas", "multi-tenant"],
+    },
+];
+
+pub fn render_showcase_page() -> Markup {
+    html! {
+        (doctype())
+        html lang="en" {
+            (document_head(&PageMeta::showcase()))
+            body class="site-shell showcase-shell" {
+                (skip_link())
+                (site_header("showcase"))
+                main id="main-content" class="showcase-main" tabindex="-1" aria-labelledby="page-title" {
+                    section class="showcase-hero" {
+                        p class="eyebrow" { "Showcase" }
+                        h1 id="page-title" { (SHOWCASE_HEADLINE) }
+                        p class="hero-lede" { (SHOWCASE_LEDE) }
+                    }
+                    section class="showcase-section" aria-labelledby="showcase-projects-title" {
+                        h2 id="showcase-projects-title" { "Shipping today" }
+                        div class="showcase-grid" {
+                            @for entry in SHOWCASE_ENTRIES {
+                                (showcase_card(entry))
+                            }
+                        }
+                    }
+                    section class="showcase-section" aria-labelledby="showcase-examples-title" {
+                        h2 id="showcase-examples-title" { "Examples & starters" }
+                        p { (SHOWCASE_EXAMPLES_LEDE) }
+                        div class="showcase-grid" {
+                            @for entry in SHOWCASE_EXAMPLE_ENTRIES {
+                                (showcase_card(entry))
+                            }
+                        }
+                    }
+                    section class="showcase-cta" aria-labelledby="showcase-cta-title" {
+                        h2 id="showcase-cta-title" { "Add your project" }
+                        p { (SHOWCASE_CTA_LEDE) }
+                        div class="showcase-cta-actions" {
+                            a class="button button-primary" href=(SHOWCASE_SUBMIT_URL) { "Open an issue" }
+                        }
+                    }
+                }
+                (site_footer())
+            }
+        }
+    }
+}
+
+fn showcase_card(entry: &ShowcaseEntry) -> Markup {
+    html! {
+        article class="showcase-card" {
+            h3 class="showcase-card-title" {
+                a href=(entry.url) { (entry.name) }
+            }
+            p class="showcase-card-tagline" { (entry.tagline) }
+            p { (entry.description) }
+            ul class="showcase-card-tags" {
+                @for tag in entry.tags {
+                    li { (tag) }
+                }
+            }
+        }
+    }
+}
+
 pub fn render_home_page(registry: &DocRegistry) -> Markup {
     html! {
         (doctype())
@@ -869,6 +1005,17 @@ impl PageMeta {
         }
     }
 
+    fn showcase() -> Self {
+        Self {
+            title: "Built with Autumn | Autumn Rust Web Framework".to_owned(),
+            description: SHOWCASE_LEDE.to_owned(),
+            canonical_path: SHOWCASE_PATH.to_owned(),
+            robots: "index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1",
+            og_type: "website",
+            structured_data: None,
+        }
+    }
+
     fn docs(page: &DocPage) -> Self {
         Self {
             title: format!("{} | Autumn Rust Web Framework Docs", page.title),
@@ -969,6 +1116,11 @@ fn site_header(active: &str) -> Markup {
                     a class="active" aria-current="location" href=(DOCS_START_PATH) { "Docs" }
                 } @else {
                     a href=(DOCS_START_PATH) { "Docs" }
+                }
+                @if active == "showcase" {
+                    a class="active" aria-current="location" href=(SHOWCASE_PATH) { "Showcase" }
+                } @else {
+                    a href=(SHOWCASE_PATH) { "Showcase" }
                 }
                 a href=(HARVEST_DOC_PATH) { "Harvest" }
                 a href=(DOCS_START_PATH) { "0.7.0" }

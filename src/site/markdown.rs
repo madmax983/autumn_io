@@ -24,8 +24,10 @@ use crate::{DOCS_SEARCH_PATH, DOCS_START_SLUG};
 
 use super::{
     DOCS_NAV_GROUPS, HARVEST_DOC_PATH, HARVEST_GUIDE_START_PATH, HARVEST_LEDE,
-    HOME_FEATURED_DOC_SLUGS, HOME_HEADLINE, HOME_LEDE, HOME_ROUTE_EXAMPLE, UNGROUPED_DOCS_LABEL,
-    docs_navigation_neighbors, home_mcp_example, home_secondary_pages, is_grouped_doc_slug,
+    HOME_FEATURED_DOC_SLUGS, HOME_HEADLINE, HOME_LEDE, HOME_ROUTE_EXAMPLE, SHOWCASE_CTA_LEDE,
+    SHOWCASE_ENTRIES, SHOWCASE_EXAMPLE_ENTRIES, SHOWCASE_EXAMPLES_LEDE, SHOWCASE_HEADLINE,
+    SHOWCASE_LEDE, SHOWCASE_SUBMIT_URL, UNGROUPED_DOCS_LABEL, docs_navigation_neighbors,
+    home_mcp_example, home_secondary_pages, is_grouped_doc_slug,
 };
 
 /// How the site describes its own Markdown negotiation to an agent reading the
@@ -92,6 +94,39 @@ pub fn render_home_page(registry: &DocRegistry) -> String {
 
     let _ = write!(out, "{}", guide_index(registry));
     let _ = write!(out, "{}", project_links());
+
+    out
+}
+
+/// The showcase page: projects built with Autumn.
+///
+/// Mirrors [`super::render_showcase_page`] — same entries, same prose, via the
+/// shared constants, so the two representations cannot drift.
+#[must_use]
+pub fn render_showcase_page() -> String {
+    let mut out = String::new();
+
+    let _ = writeln!(out, "# {SHOWCASE_HEADLINE}\n");
+    let _ = writeln!(out, "{SHOWCASE_LEDE}\n");
+
+    let _ = writeln!(out, "## Shipping today\n");
+    for entry in SHOWCASE_ENTRIES {
+        let _ = writeln!(out, "### [{}]({})\n", entry.name, entry.url);
+        let _ = writeln!(out, "*{}*\n", entry.tagline);
+        let _ = writeln!(out, "{}\n", entry.description);
+    }
+
+    let _ = writeln!(out, "## Examples & starters\n");
+    let _ = writeln!(out, "{SHOWCASE_EXAMPLES_LEDE}\n");
+    for entry in SHOWCASE_EXAMPLE_ENTRIES {
+        let _ = writeln!(out, "### [{}]({})\n", entry.name, entry.url);
+        let _ = writeln!(out, "*{}*\n", entry.tagline);
+        let _ = writeln!(out, "{}\n", entry.description);
+    }
+
+    let _ = writeln!(out, "## Add your project\n");
+    let _ = writeln!(out, "{SHOWCASE_CTA_LEDE}\n");
+    let _ = writeln!(out, "- [Open an issue]({SHOWCASE_SUBMIT_URL})\n");
 
     out
 }
